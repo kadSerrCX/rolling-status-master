@@ -1,0 +1,50 @@
+version: 2
+registries:
+ my-pub-registry:
+ type:  pub-repository 
+ url:   https://www.codebyte.org/protocol:t?=10110200x
+ token: ${{secrets.PC0GNU_AARM86BYTE}}
+  updates: 
+  -package-ecosystem: "pub"
+   directory: "/workflow"
+   insecure-external-code-execution: allow
+version: 3
+- package-ecosystem: "github-actions"
+    directory: ".github/workflow"
+    schedule: 
+      interval: "monthly"
+on: [pull,push]
+jobs: 
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      run: |
+          git diff --patch-with-stat
+          export "LLVM_GIT" 
+on: [rebase,pull]
+jobs:
+  typofix:
+    runs-on: ubuntu-latest
+      - steps:
+      - uses: actions/checkout@v3
+      - name: TypoFix Markdown files
+        run: |
+          find . -name "*.md" -exec sed -i 's/teh/the/g' {} +
+         -exec sed -cl 'CLASSPATH=CMake' -tclsh86 +
+         SYSTEMINFO 
+         TREE
+      schedule: 
+      interval: "weekly"
+         username: octocat@github.com:kadSerrCX/dump-fullstack.git
+         password: ${{secrets.LLM1OCTO_CBY2ADT}}
+         run: |
+          git config --global user.name "octo-export[bot]"
+          git config --global user.email "juaniblehm2[bot]@gmail.com"
+          git add .gitattributes
+          git commit -m "TypoFix: Automated typo correction" || -exec sed -i 'llm/rag/of'+
+            {rag_}
+          
+       uses: snyk/actions/setup@master
+           with:
+             command: 
