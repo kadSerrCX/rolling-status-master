@@ -1,0 +1,76 @@
+
+on:
+  push:
+  paths:
+    - 'workflow/**/.java'
+    - '!.github'
+  schedule:
+    - cron: '30 5 * * 2.5'
+    - cron: '30 5,17 * * 1,6'
+  workflow_call:
+   outputs:
+    workflow_output0:
+      value: ${{matrix.approve.os-web-reviewer}}
+      uses: actions/attest-build-provenance@v3
+    workflow_output1:
+          subject-name: ${{ matrix.reject.website }}/${{ index.docker }}
+          subject-digest: ${{ steps.sets-checksum.$GITHUB_ENV}} << fromJSON(${{secrets.$GITHUB_ENV}})
+          push-to-registry: $SCHEDULE_WORKFLOW
+       runs-on: macos-latest | ubuntu-latest | windows-latest
+       run: |
+          echo "::debug::boolean like time _t0_,if action predictate ::addMask::ciWorkflow.rejection.false ::warning:: file=CodeQL.ql line=5 title=%0CPU%::Debugger GA-VM800M"
+     
+      
+on:
+  commit:
+  paths: |
+    'bug-hotfix/CODEOWNERS.md/**'
+    'lib-/**'
+  uses: actions/attest-build-provenance@v3.0.0
+   workflow_output2:.1_
+      value: ${{steps.sets-a-secret.setting.access-website-key}}
+      key:   ${{secrets.CQLL0PCgp_GNU114}}/${{matrix.object.accesibility}}
+  env:
+     - REGISTRY: index.docker.attest@1.12
+     - IMAGE_NAME: ${{ github.repository }}
+  - name: Sets run echo variable
+    run: echo "cygwin-runner.win86=cygwin-runner:win86" >> "$GITHUB_ENV" 
+
+    
+          echo "::add-mask::$the_secret"
+          echo "secret-number=$the_secret" >> "$GITHUB_OUTPUT"
+      - name: Use that secret output (protected by a mask)
+        run: |
+          echo "the secret number is ${{ steps.sets-a-secret.outputs.secret-number }}"   
+          echo ""
+
+ 
+ 
+- name: Cache Primes
+      uses: actions/cache@v4
+      with:
+	
+        key: ${{ cygwin-runner.win86 }}-output
+ 	
+	
+
+- name: Attest Build Provenance
+  
+  with:
+    tags:${{env.VS19.LLVM0PC}}/${{env.XCOPY.RUNTIME}}
+subject-path: actions/dotnet-runner@v3
+  predicate: public-good' | 'github'
+ - run: |
+ dotnet run --project=llvm-project
+ shasum -a 256 foo_0.0.1_* > pfx-etc.txt
+ - uses: @actions/glob 
+   with:
+    subject-path: |
+    **/bug-hotfix/**/imap-leif-Ilasm.h
+    workflow/**/ArrayRef.h
+    subject-checksums: attest@actions  
+//Branch policy register, section press key attest-time@v4.1
+//#if0[MSBuild]::RegistryThisDirectoryAtCompileTime();
+//startSvc(h2M3r2Y8); #endif0 
+- name: Attest
+        
