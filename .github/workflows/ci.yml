@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Verify checkout
+      run: |
+        echo "Current branch: $(git branch --show-current)"
+        echo "Available branches:"
+        git branch -a
+        
+    - name: Display repository info
+      run: |
+        echo "Repository structure:"
+        ls -la
+        echo "README content:"
+        cat README.md || echo "No README found"
