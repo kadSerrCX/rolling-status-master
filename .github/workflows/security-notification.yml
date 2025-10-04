@@ -1,0 +1,230 @@
+name: Security Vulnerability Notification
+
+# Triggers on push and pull request events to detect forked/remote activity
+on:
+  push:
+    branches:
+      - main
+      - '**'
+  pull_request:
+    branches:
+      - main
+      - '**'
+    types: [opened, synchronize, reopened]
+  pull_request_target:
+    branches:
+      - main
+      - '**'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  security-check:
+    name: Check for Forked/Remote Activity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Fork or Remote Source
+        id: detect-fork
+        run: |
+          echo "Starting security check for forked/remote activity..."
+
+          # Initialize variables
+          IS_FORK="false"
+          IS_EXTERNAL="false"
+          NOTIFICATION_MESSAGE=""
+
+          # Check if this is a pull request from a fork
+          if [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "pull_request_target" ]; then
+            echo "Analyzing pull request..."
+
+            # Check if PR is from a fork
+            if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+              IS_FORK="true"
+              echo "⚠️ SECURITY ALERT: Pull request is from a forked repository!"
+              NOTIFICATION_MESSAGE="Pull Request #${{ github.event.pull_request.number }} from forked repository detected"
+            fi
+
+            # Check if PR head repository is different from base
+            if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+              IS_EXTERNAL="true"
+              echo "⚠️ SECURITY ALERT: Pull request is from external repository!"
+              echo "Source: ${{ github.event.pull_request.head.repo.full_name }}"
+              echo "Target: ${{ github.repository }}"
+              NOTIFICATION_MESSAGE="${NOTIFICATION_MESSAGE}\nExternal Repository: ${{ github.event.pull_request.head.repo.full_name }}"
+            fi
+          fi
+
+          # Check for push events from different remotes
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Analyzing push event..."
+
+            # Get commit information
+            COMMIT_SHA="${{ github.sha }}"
+            COMMIT_AUTHOR="${{ github.event.head_commit.author.username }}"
+            COMMIT_URL="${{ github.event.head_commit.url }}"
+
+            echo "Commit SHA: ${COMMIT_SHA}"
+            echo "Commit Author: ${COMMIT_AUTHOR}"
+
+            # Check if commit author is external (not a regular contributor)
+            # This is a basic check - in production, you'd want to maintain a whitelist
+            if [ -n "${COMMIT_AUTHOR}" ]; then
+              echo "Checking commit author: ${COMMIT_AUTHOR}"
+              NOTIFICATION_MESSAGE="Push from author: ${COMMIT_AUTHOR}"
+            fi
+          fi
+
+          # Set outputs
+          echo "is_fork=${IS_FORK}" >> $GITHUB_OUTPUT
+          echo "is_external=${IS_EXTERNAL}" >> $GITHUB_OUTPUT
+          echo "notification_message=${NOTIFICATION_MESSAGE}" >> $GITHUB_OUTPUT
+
+      - name: Generate Security Report
+        if: steps.detect-fork.outputs.is_fork == 'true' || steps.detect-fork.outputs.is_external == 'true'
+        run: |
+          echo "╔════════════════════════════════════════════════════════════╗"
+          echo "║           SECURITY VULNERABILITY NOTIFICATION              ║"
+          echo "╚════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "Event Type: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
+          echo ""
+
+          if [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "pull_request_target" ]; then
+            echo "Pull Request Details:"
+            echo "  - PR Number: #${{ github.event.pull_request.number }}"
+            echo "  - PR Title: ${{ github.event.pull_request.title }}"
+            echo "  - PR Author: ${{ github.event.pull_request.user.login }}"
+            echo "  - Source Repo: ${{ github.event.pull_request.head.repo.full_name }}"
+            echo "  - Source Branch: ${{ github.event.pull_request.head.ref }}"
+            echo "  - Target Branch: ${{ github.event.pull_request.base.ref }}"
+            echo "  - Is Fork: ${{ github.event.pull_request.head.repo.fork }}"
+            echo "  - PR URL: ${{ github.event.pull_request.html_url }}"
+          fi
+
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Commit Details:"
+            echo "  - Commit SHA: ${{ github.sha }}"
+            echo "  - Commit Message: ${{ github.event.head_commit.message }}"
+            echo "  - Commit Author: ${{ github.event.head_commit.author.name }} <${{ github.event.head_commit.author.email }}>"
+            echo "  - Commit URL: ${{ github.event.head_commit.url }}"
+          fi
+
+          echo ""
+          echo "⚠️  ALERT: Activity from forked/remote source detected!"
+          echo "⚠️  Please review the changes carefully before merging."
+          echo ""
+
+      - name: Create Issue Notification
+        if: steps.detect-fork.outputs.is_fork == 'true' || steps.detect-fork.outputs.is_external == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const eventType = context.eventName;
+            let issueTitle = '🔒 Security Alert: Activity from Forked/Remote Source';
+            let issueBody = '';
+
+            issueBody += '## Security Vulnerability Notification\n\n';
+            issueBody += `**Event Type:** ${eventType}\n`;
+            issueBody += `**Repository:** ${context.repo.owner}/${context.repo.repo}\n`;
+            issueBody += `**Actor:** ${context.actor}\n`;
+            issueBody += `**Ref:** ${context.ref}\n`;
+            issueBody += `**Workflow Run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n`;
+
+            if (eventType === 'pull_request' || eventType === 'pull_request_target') {
+              const pr = context.payload.pull_request;
+              issueBody += '### Pull Request Details\n\n';
+              issueBody += `- **PR Number:** #${pr.number}\n`;
+              issueBody += `- **PR Title:** ${pr.title}\n`;
+              issueBody += `- **PR Author:** @${pr.user.login}\n`;
+              issueBody += `- **Source Repository:** ${pr.head.repo.full_name}\n`;
+              issueBody += `- **Source Branch:** ${pr.head.ref}\n`;
+              issueBody += `- **Target Branch:** ${pr.base.ref}\n`;
+              issueBody += `- **Is Fork:** ${pr.head.repo.fork}\n`;
+              issueBody += `- **PR URL:** ${pr.html_url}\n\n`;
+            }
+
+            if (eventType === 'push') {
+              const commit = context.payload.head_commit;
+              if (commit) {
+                issueBody += '### Commit Details\n\n';
+                issueBody += `- **Commit SHA:** ${context.sha}\n`;
+                issueBody += `- **Commit Message:** ${commit.message}\n`;
+                issueBody += `- **Commit Author:** ${commit.author.name} <${commit.author.email}>\n`;
+                issueBody += `- **Commit URL:** ${commit.url}\n\n`;
+              }
+            }
+
+            issueBody += '### ⚠️ Security Recommendations\n\n';
+            issueBody += '- Review all changes carefully before merging\n';
+            issueBody += '- Verify the identity of the contributor\n';
+            issueBody += '- Check for any suspicious code patterns\n';
+            issueBody += '- Ensure no secrets or credentials are exposed\n';
+            issueBody += '- Run security scans on the proposed changes\n';
+            issueBody += '- Validate that the changes align with project guidelines\n\n';
+            issueBody += '---\n';
+            issueBody += '*This is an automated security notification generated by the Security Vulnerability Notification workflow.*';
+
+            try {
+              const result = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: issueBody,
+                labels: ['security', 'alert', 'forked-activity']
+              });
+              console.log(`Security notification issue created: #${result.data.number}`);
+            } catch (error) {
+              console.log('Note: Could not create issue. This may be expected in forks or if issues are disabled.');
+              console.log('Error:', error.message);
+            }
+
+      - name: Post Comment on Pull Request
+        if: (steps.detect-fork.outputs.is_fork == 'true' || steps.detect-fork.outputs.is_external == 'true') && (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = `## 🔒 Security Alert: Forked/Remote Repository Activity Detected
+
+            This pull request originates from a forked or external repository. Please review the following:
+
+            **Source Information:**
+            - Repository: ${{ github.event.pull_request.head.repo.full_name }}
+            - Branch: ${{ github.event.pull_request.head.ref }}
+            - Author: @${{ github.event.pull_request.user.login }}
+            - Is Fork: ${{ github.event.pull_request.head.repo.fork }}
+
+            **Security Checklist:**
+            - [ ] Verify the identity of the contributor
+            - [ ] Review all code changes for security issues
+            - [ ] Check for exposed secrets or credentials
+            - [ ] Validate changes against project guidelines
+            - [ ] Run security scans
+            - [ ] Test the changes thoroughly
+
+            **⚠️ Important:** Exercise extra caution when reviewing and merging changes from external sources.
+
+            ---
+            *This is an automated security notification. For more details, check the [workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}).*`;
+
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: comment
+              });
+              console.log('Security comment posted on PR');
+            } catch (error) {
+              console.log('Note: Could not post comment. This may be expected in some contexts.');
+              console.log('Error:', error.message);
+            }
