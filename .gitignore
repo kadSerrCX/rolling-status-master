@@ -1,0 +1,25 @@
+# SBOM artifacts
+sbom-*.json
+sbom-*.xml
+*.sbom
+
+# Build artifacts
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log

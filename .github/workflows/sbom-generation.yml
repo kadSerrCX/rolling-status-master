@@ -1,0 +1,67 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Run weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  security-events: write
+  actions: read
+
+jobs:
+  sbom-generation:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Generate SBOM using Anchore
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom-spdx.json
+          upload-artifact: true
+          upload-release-assets: false
+      
+      - name: Generate SBOM in CycloneDX format
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom-cyclonedx.json
+          upload-artifact: true
+          upload-release-assets: false
+      
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-reports
+          path: |
+            sbom-*.json
+          retention-days: 90
+          if-no-files-found: error
+      
+      - name: SBOM Generation Summary
+        run: |
+          echo "::notice title=SBOM Generation Complete::Software Bill of Materials generated successfully"
+          echo "### SBOM Generation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ SBOM files generated:" >> $GITHUB_STEP_SUMMARY
+          echo "- SPDX format: \`sbom-spdx.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "- CycloneDX format: \`sbom-cyclonedx.json\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts are available for download from the workflow run." >> $GITHUB_STEP_SUMMARY
