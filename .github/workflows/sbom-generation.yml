@@ -46,15 +46,6 @@ jobs:
           upload-artifact: true
           upload-release-assets: false
       
-      - name: Upload SBOM artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-reports
-          path: |
-            sbom-*.json
-          retention-days: 90
-          if-no-files-found: error
-      
       - name: SBOM Generation Summary
         run: |
           echo "::notice title=SBOM Generation Complete::Software Bill of Materials generated successfully"
