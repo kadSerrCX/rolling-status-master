@@ -81,7 +81,7 @@
         "precise": 0.3,
         "balanced": 0.7,
         "creative": 0.9,
-        "wild": 1.2
+        "wild": 1.0
       },
       "token_limits": {
         "brief": 100,
