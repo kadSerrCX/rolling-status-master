@@ -1,0 +1,15 @@
+{
+  "name": "codec5jchain",
+  "version": "1.0.0",
+  "description": "Tengo ideas a florar en primavera 2025 madurando C/C++ cual árbol si acaso rudimenta siempre verde, SQLite brinda vstest en breakpoint remarcado.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@github/copilot": "^0.0.362"
+  }
+}

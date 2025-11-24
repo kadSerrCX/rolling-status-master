@@ -9,3 +9,17 @@ Exploración de ASP.NET desde la línea de comando en su versión v4.07 permite 
 
 Facilitando al marco un entorno florecido a flujos __build__.
 Esta metodología es útil sabiendo cada interfaz gráfica o desarrolladores UI de entornos atormentadores,tal UX/U es efervescente en sueldo AR/US y tokens id.
+
+## Installation
+
+To install the GitHub Copilot CLI globally:
+
+```bash
+npm install -g @github/copilot@latest
+```
+
+Or to install the project dependencies (including GitHub Copilot CLI):
+
+```bash
+npm install
+```
