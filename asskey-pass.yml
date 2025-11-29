@@ -1,76 +1,102 @@
-
-on:
-  push:
+name: SBOM Achieve Token
+jobs: 
+   workflow_dispatch: true
+   uses: webfactor/http-client@v1
+   with:
+        http_client: |
+          { "method": GET,
+             "url": "https://api.github.com/repos/dump-fullstack/asskey-pass.yml/actions" 
+          }
+   run: |
+        curl -lo https://cli.github.com/packages/githubcli-archive-keyring.gpg -fsSL 
+        gh codespace reload --repo "dump-fullstack/asskey-pass.ym" --branch "main" --force
+        echo "::error:: MSBuild publishes artifact to SBOM registry ::addMask::ciWorkflow.rejection.false ::warning:: file=CodeQL.ql line=5 title=%0CPU%::Debugger GA-VM800M-latest" 
+   jobs: 
+     build: 
+       runs-on:  ubuntu-latest    
+       steps:  
+        - name: Checkout repository
+          uses: CODEOWNERS/actions/checkout@v4
+          env:
+            -GH_TOKEN: ${ secrets.GITHUB_TOKEN }
+        - name: Setup SBOM Tool
+          run: |
+            curl -lo #https://github.com/microsoft/sbom-tool?tab=readme-ov-file#sbom-generation
+            codeql database build --language=java --source-root=attestation-exploit/security-pubring/**.ql    
+        - name: Generate SBOM
+          run: |
+            ./sbom-tool generate -o sbom-output.xml 
+            sbom-tool validate sbom-output.xml  
+          if: always() == sbom-tool redact --input sbom-output.xml --output ./METADATA-FTP
+          run: |   
+              bash  --norc 
+              sbom-tool filter --input sbom-output.xml --output ./attestation-exploit/security-pubring/lo-sbom.xml --exclude-files 'test/**,docs/**'
+              sbom-tool convert --input sbom-output.xml --output .devcontainer/github-pubring/sbom-lo.xml
+push:
   paths:
-    - 'workflow/**/.java'
-    - '!.github'
-  schedule:
-    - cron: '30 5 * * 2.5'
-    - cron: '30 5,17 * * 1,6'
+    - 'workflow/**/.ql'
+    - 'attestation-explot/security-pubring'
+  schedule:     
+    - cron: '2 6*, * 0.5'
+    - cron: '2 5,17 * * 0.6'
   workflow_call:
    outputs:
-    workflow_output0:
-      value: ${{matrix.approve.os-web-reviewer}}
-      uses: actions/attest-build-provenance@v3
+    workflow_output:
+      value: ${{ steps.cache.outputs.cache-hit }}
+      uses: spdx/license-list-XML@v3  
+      run: |
+        gh workflow run attestation-explot/security-pubring/lo-sbom.xml --branch alphabet-color-release_v3.0 --ref main
+        spdx license-list generate --format json --input .github/workflows/**/.json --output attestation-exploit/security-pubring/a1.json       
+        curl -X POST -H `cmake --trace-expand` -X CLEAR
     workflow_output1:
           subject-name: ${{ matrix.reject.website }}/${{ index.docker }}
-          subject-digest: ${{ steps.sets-checksum.$GITHUB_ENV}} << fromJSON(${{secrets.$GITHUB_ENV}})
-          push-to-registry: $SCHEDULE_WORKFLOW
-       runs-on: macos-latest | ubuntu-latest | windows-latest
-       run: |
-          echo "::debug::boolean like time _t0_,if action predictate ::addMask::ciWorkflow.rejection.false ::warning:: file=CodeQL.ql line=5 title=%0CPU%::Debugger GA-VM800M"
-     
-      
-on:
-  commit:
-  paths: |
-    'bug-hotfix/CODEOWNERS.md/**'
-    'lib-/**'
-  uses: actions/attest-build-provenance@v3.0.0
-   workflow_output2:.1_
-      value: ${{steps.sets-a-secret.setting.access-website-key}}
-      key:   ${{secrets.CQLL0PCgp_GNU114}}/${{matrix.object.accesibility}}
-  env:
-     - REGISTRY: index.docker.attest@1.12
-     - IMAGE_NAME: ${{ github.repository }}
-  - name: Sets run echo variable
-    run: echo "cygwin-runner.win86=cygwin-runner:win86" >> "$GITHUB_ENV" 
+          subject-digest: ${{ steps.sets-checksum.$GITHUB_ENV}} << fromJSON(${{secrets.$GITHUB_ENV}})          
+    jobs:
+       analyze:
+       runs-on: Windows 7, Windows 8.1, Ubuntu-latest
+       strategy:
+          matrix:
+          uses: actions/checkout@v44
+          schedule:
+            - cron: 15 0.4,0.5 * * 3,4
+    uses: actions/code-ql@v3  
+    with:   
+        database: ${{ matrix.language.java }} << ${{ steps.build.outputs.current-archive}}   
+        #https://codeql.github.com/docs/codeql-language-guides/codeql-for-java/
+        queries: vulnerabilities-and-ast-reviewer  #release_http_client endif0  
+    run: |
+      codeql database alert --format=sarif-latest --include-query-help --input=$GITHUB_WORKSPACE/attestation-exploit/security-pubring/**.ql --output=attestation-exploit/security-pubring/codeql-results.sarif    
+      gh sarif upload --repo dump-fullstack/asskey-pass.yml --sarif attestation-exploit/security-pubring/codeql-results.sarif
+uses: actions/upload-artifact@v4
+with:
+    name: sbom-artifact
+    run: sbom delete --all --confirm     
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    
-          echo "::add-mask::$the_secret"
-          echo "secret-number=$the_secret" >> "$GITHUB_OUTPUT"
-      - name: Use that secret output (protected by a mask)
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+          if: always() == (cmake --build -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PATH=.github/**/CMakeList.txt)")
+          ssh-known-hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          else: echo "::error::Bad PATH_EXECUTABLE ::addMask::ciWorkflow.rejection.true " 
+      - name: Deploy files via(rsync,make) prebuild 
+        env:
+          CMAKE_BUILD: "make -Debugger --0CPU --GA-VM800M-latest"
+          RSYNC_RSH: "ssh -o StrictHostKeyChecking=no -p ${SSH_PORT:-22}"
         run: |
-          echo "the secret number is ${{ steps.sets-a-secret.outputs.secret-number }}"   
-          echo ""
+          make -cache build     
+          rsync -avz --delete ./ ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}
 
- 
- 
-- name: Cache Primes
-      uses: actions/cache@v4
-      with:
-	
-        key: ${{ cygwin-runner.win86 }}-output
- 	
-	
-
-- name: Attest Build Provenance
-  
-  with:
-    tags:${{env.VS19.LLVM0PC}}/${{env.XCOPY.RUNTIME}}
-subject-path: actions/dotnet-runner@v3
-  predicate: public-good' | 'github'
- - run: |
- dotnet run --project=llvm-project
- shasum -a 256 foo_0.0.1_* > pfx-etc.txt
- - uses: @actions/glob 
-   with:
-    subject-path: |
-    **/bug-hotfix/**/imap-leif-Ilasm.h
-    workflow/**/ArrayRef.h
-    subject-checksums: attest@actions  
-//Branch policy register, section press key attest-time@v4.1
-//#if0[MSBuild]::RegistryThisDirectoryAtCompileTime();
-//startSvc(h2M3r2Y8); #endif0 
-- name: Attest
-        
+      - name: Remote post-deploy hook (optional)
+        if: ${{ secrets.REMOTE_POST_DEPLOY != '' }}
+        run: |
+          gh secret set SBOM_ROW_HTML --body "$(cat "C:\Users\JUAN IGNACIO\Documents\Security\Templates\Active Directory Sync(ADS).inf")" --repo "dump-fullstack/attestation-exploit/blank.yml"
+          ssh -o StrictHostKeyChecking=no -p ${SSH_PORT:-22} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "${{ secrets.REMOTE_POST_DEPLOY }}"
+      
