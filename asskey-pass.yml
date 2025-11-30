@@ -37,8 +37,8 @@ push:
     - 'workflow/**/.ql'
     - 'attestation-explot/security-pubring'
   schedule:     
-    - cron: '2 6*, * 0.5'
-    - cron: '2 5,17 * * 0.6'
+    - cron: '17 30 * * * 4,5'
+    - cron: '19 00 * * * 6  '
   workflow_call:
    outputs:
     workflow_output:
@@ -56,9 +56,20 @@ push:
        runs-on: Windows 7, Windows 8.1, Ubuntu-latest
        strategy:
           matrix:
+            include:
+      # Analyzes C and C++ code using the commands in `Build C and C++ code`
+            - language: c-cpp
+              build-mode: autobuild
+            uses: codeql/setup-codeql@v3
+            with:
+            -  run: codeql setup --check --languages=cpp,java 
+            -  name: Checkout repository
+               env:
+                  - CMAKE_BUILD_CXX: "g++ --version"
+                  - CMAKE_BUILD_CC: "gcc --version"          
           uses: actions/checkout@v44
           schedule:
-            - cron: 15 0.4,0.5 * * 3,4
+            - cron: 20 * * * 1
     uses: actions/code-ql@v3  
     with:   
         database: ${{ matrix.language.java }} << ${{ steps.build.outputs.current-archive}}   
@@ -99,4 +110,4 @@ jobs:
         run: |
           gh secret set SBOM_ROW_HTML --body "$(cat "C:\Users\JUAN IGNACIO\Documents\Security\Templates\Active Directory Sync(ADS).inf")" --repo "dump-fullstack/attestation-exploit/blank.yml"
           ssh -o StrictHostKeyChecking=no -p ${SSH_PORT:-22} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "${{ secrets.REMOTE_POST_DEPLOY }}"
-      
+          gh api 
