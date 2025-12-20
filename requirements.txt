@@ -1,0 +1,80 @@
+# Python Dependencies for codec5jchain
+# Optimized for Windows 10 with NVIDIA RTX 3050 and AMD Ryzen 5 5600X
+
+# Core Dependencies
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# GPU Acceleration (NVIDIA RTX 3050)
+# Note: Install PyTorch with CUDA separately using:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# torch>=2.0.0
+# torchvision>=0.15.0
+# torchaudio>=2.0.0
+
+# XML Processing (for KinoNichVolling.xml and other XML configs)
+lxml>=4.9.0
+xmltodict>=0.13.0
+defusedxml>=0.7.1
+
+# Database Operations
+sqlalchemy>=2.0.0
+sqlite-utils>=3.30
+
+# UI/UX Development
+PyQt6>=6.5.0
+PySide6>=6.5.0
+customtkinter>=5.1.0
+tkinter-tooltip>=2.1.0
+
+# Build Automation
+invoke>=2.0.0
+pybuilder>=0.13.0
+setuptools>=65.0.0
+wheel>=0.38.0
+
+# System Monitoring and Performance
+psutil>=5.9.0
+GPUtil>=1.4.0
+py-cpuinfo>=9.0.0
+nvidia-ml-py>=12.535.0
+
+# Parallel Processing
+joblib>=1.2.0
+dask>=2023.1.0
+distributed>=2023.1.0
+
+# File and Path Utilities
+pathlib2>=2.3.7
+python-dotenv>=1.0.0
+
+# HTTP and Networking
+requests>=2.28.0
+urllib3>=1.26.0
+
+# Logging and Debugging
+loguru>=0.7.0
+rich>=13.0.0
+colorama>=0.4.6
+
+# Testing
+pytest>=7.2.0
+pytest-cov>=4.0.0
+pytest-xdist>=3.0.0
+
+# Code Quality
+black>=23.0.0
+flake8>=6.0.0
+pylint>=2.16.0
+mypy>=1.0.0
+
+# Documentation
+sphinx>=6.0.0
+sphinx-rtd-theme>=1.2.0
+
+# Additional Utilities
+tqdm>=4.64.0
+click>=8.1.0
+pyyaml>=6.0
+toml>=0.10.2
