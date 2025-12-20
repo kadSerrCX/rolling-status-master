@@ -170,7 +170,7 @@ def gpu_benchmark():
     b = torch.rand(size, size, device=device)
     
     # Warm-up
-    c = torch.mm(a, b)
+    _ = torch.mm(a, b)
     torch.cuda.synchronize()
     
     # Actual benchmark

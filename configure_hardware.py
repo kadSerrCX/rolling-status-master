@@ -116,7 +116,7 @@ def check_gpu():
             ["nvidia-smi"], 
             capture_output=True, 
             text=True, 
-            timeout=5
+            timeout=10  # Increased timeout for slower systems
         )
         
         if result.returncode == 0:

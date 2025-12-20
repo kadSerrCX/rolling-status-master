@@ -123,7 +123,7 @@ def get_network_info():
 
 def format_bar(percent, width=40):
     """Create a progress bar"""
-    filled = int(width * percent / 100)
+    filled = int(round(width * percent / 100))
     bar = '█' * filled + '░' * (width - filled)
     return f"[{bar}] {percent:.1f}%"
 

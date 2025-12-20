@@ -7,11 +7,10 @@ pandas>=2.0.0
 scipy>=1.10.0
 
 # GPU Acceleration (NVIDIA RTX 3050)
-# Note: Install PyTorch with CUDA separately using:
-# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-# torch>=2.0.0
-# torchvision>=0.15.0
-# torchaudio>=2.0.0
+# Note: PyTorch with CUDA must be installed separately using the command below
+# This ensures the correct CUDA version (12.1) is installed for RTX 3050
+# Installation command:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # XML Processing (for KinoNichVolling.xml and other XML configs)
 lxml>=4.9.0
