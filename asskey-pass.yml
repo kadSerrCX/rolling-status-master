@@ -7,16 +7,28 @@ jobs:
           { "method": GET,
              "url": "https://api.github.com/repos/dump-fullstack/asskey-pass.yml/actions" 
           }
-   run: |
+   run: |  
         curl -lo https://cli.github.com/packages/githubcli-archive-keyring.gpg -fsSL 
         gh codespace reload --repo "dump-fullstack/asskey-pass.ym" --branch "main" --force
-        echo "::error:: MSBuild publishes artifact to SBOM registry ::addMask::ciWorkflow.rejection.false ::warning:: file=CodeQL.ql line=5 title=%0CPU%::Debugger GA-VM800M-latest" 
+        sqllite3 security-pubring/asskey-pass.yml.db ".tables" 
+
+push_target_define: 
+   with: 
+   dockerfile:  ./.github/workflows/**/Dockerfile 
+   path: database-artifacts/**/buildContainerImage.sh
+   run: |
+       docker build -memory 4G --cpus 2 --build-arg BASE_IMAGE=linux/amd64 -f Dockerfile
+       docker -DOCKER_BUILDKIT buildx --platform windows/amd64 UBUNTU_2204=push.mysql-bin.2699.39547.8:12464 
+       sqllite3 "SELECT id FROM docker WHERE username = 'admin' AND email = 'juaniblehm2@gmail.com'" 
    jobs: 
      build: 
        runs-on:  ubuntu-latest    
        steps:  
         - name: Checkout repository
-          uses: CODEOWNERS/actions/checkout@v4
+          uses: actions/sqlite@v4
+        - name: Setup GitHub CLI
+          uses: cli/gh-action@v3
+          run: gh make release --repo dump-fullstack/database-artifacts --tag v1.1.4
           env:
             -GH_TOKEN: ${ secrets.GITHUB_TOKEN }
         - name: Setup SBOM Tool
@@ -44,7 +56,7 @@ push:
     workflow_output:
       value: ${{ steps.cache.outputs.cache-hit }}
       uses: spdx/license-list-XML@v3  
-      run: |
+      run: |  
         gh workflow run attestation-explot/security-pubring/lo-sbom.xml --branch alphabet-color-release_v3.0 --ref main
         spdx license-list generate --format json --input .github/workflows/**/.json --output attestation-exploit/security-pubring/a1.json       
         curl -X POST -H `cmake --trace-expand` -X CLEAR
@@ -108,6 +120,6 @@ jobs:
       - name: Remote post-deploy hook (optional)
         if: ${{ secrets.REMOTE_POST_DEPLOY != '' }}
         run: |
-          gh secret set SBOM_ROW_HTML --body "$(cat "C:\Users\JUAN IGNACIO\Documents\Security\Templates\Active Directory Sync(ADS).inf")" --repo "dump-fullstack/attestation-exploit/blank.yml"
+          gh secret set SBOM_ROW_HTML --body "$(cat "C:\docker\JUAN IGNACIO\Documents\Security\Templates\Active Directory Sync(ADS).inf")" --repo "dump-fullstack/attestation-exploit/blank.yml"
           ssh -o StrictHostKeyChecking=no -p ${SSH_PORT:-22} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} "${{ secrets.REMOTE_POST_DEPLOY }}"
-          gh api 
+          gh api --scan
